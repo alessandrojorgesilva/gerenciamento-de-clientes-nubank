@@ -1,0 +1,69 @@
+package br.com.alessandro.gerenciamento_de_clientes_nubank.controller;
+
+
+import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosCliente;
+import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosContato;
+import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosDetalamentoContato;
+import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosDetalhamentoCliente;
+import br.com.alessandro.gerenciamento_de_clientes_nubank.repository.ClienteRepository;
+import br.com.alessandro.gerenciamento_de_clientes_nubank.service.ClienteService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/clientes")
+public class ClienteController {
+    @Autowired
+    private ClienteService clienteService;
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @PostMapping
+    public ResponseEntity<DadosCliente> save(@RequestBody DadosCliente dados, UriComponentsBuilder componentsBuilder){
+        var cliente = clienteService.salvar(dados);
+        var uri = componentsBuilder.path("/clientes/{id}").buildAndExpand(cliente.getId()).toUri();
+        return ResponseEntity.created(uri).body(new DadosCliente(cliente));
+    }
+
+   @GetMapping
+    public ResponseEntity<List<DadosDetalhamentoCliente>> listarTodosClientes(){
+        var lista = clienteService.listarTodos();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DadosCliente> getClienteId(@PathVariable Long id){
+        var cliente = clienteService.getClientId(id);
+        return ResponseEntity.ok(new DadosCliente(cliente));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DadosCliente> atualizarCliente(@PathVariable Long id, @RequestBody DadosCliente dados){
+        var cliente = clienteService.atualizarCliente(id, dados);
+        return ResponseEntity.ok(new DadosCliente(cliente));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity ExclurCLiente(@PathVariable Long id){
+        clienteRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/contatos")
+    public ResponseEntity<DadosContato> adicionarContato(@PathVariable Long id, @RequestBody DadosContato dados, UriComponentsBuilder uriComponentsBuilder){
+        var contato = clienteService.adicionarContato(id, dados);
+        var uri = uriComponentsBuilder.path("clientes/{id}/contatos/{idContato}").buildAndExpand(id, contato.getId()).toUri();
+        return ResponseEntity.created(uri).body(new DadosContato(contato));
+    }
+
+    @GetMapping("/{id}/contatos")
+    public ResponseEntity<List<DadosDetalamentoContato>> listarContatosCliente(@PathVariable Long id){
+        var listaContatos = clienteService.listarContatosCliente(id);
+        return ResponseEntity.ok(listaContatos);
+    }
+
+}
