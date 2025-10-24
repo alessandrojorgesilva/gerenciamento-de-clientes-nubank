@@ -5,6 +5,7 @@ import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosCliente;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class Cliente {
     @Column(unique = true)
     private String cpf;
 
-    private String dataNascimento; /*mudar depois para Date, LocalDate ou DateTime*/
+    private LocalDate dataNascimento;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Contato> contatos = new ArrayList<>();
