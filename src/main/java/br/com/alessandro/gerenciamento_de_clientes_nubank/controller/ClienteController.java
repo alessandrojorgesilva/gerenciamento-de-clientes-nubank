@@ -9,7 +9,6 @@ import br.com.alessandro.gerenciamento_de_clientes_nubank.repository.ClienteRepo
 import br.com.alessandro.gerenciamento_de_clientes_nubank.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -27,7 +26,6 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<DadosDetalhamentoCliente> save(@RequestBody @Valid DadosCliente dados, UriComponentsBuilder componentsBuilder){
         var cliente = clienteService.salvar(dados);
-        HttpStatusCode DadosDetalhamentoCliente;
         var uri = componentsBuilder.path("/clientes/{id}").buildAndExpand(cliente.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhamentoCliente(cliente));
     }
@@ -42,7 +40,6 @@ public class ClienteController {
     public ResponseEntity<DadosDetalhamentoCliente> getClienteId(@PathVariable Long id){
         var cliente = clienteService.getClientId(id);
         return ResponseEntity.ok(new DadosDetalhamentoCliente(cliente));
-
     }
 
     @PutMapping("/{id}")

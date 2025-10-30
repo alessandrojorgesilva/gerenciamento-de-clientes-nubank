@@ -19,5 +19,8 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
     Optional<Cliente> findByCpf(String cpf);
 
+    @Query("SELECT c FROM Cliente c WHERE c.nome = :nome")
+    Optional<Cliente> getClienteCpf(String nome);
+
 
 }

@@ -4,18 +4,17 @@ import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosCliente;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosContato;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosDetalamentoContato;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.dto.DadosDetalhamentoCliente;
+import br.com.alessandro.gerenciamento_de_clientes_nubank.exceptions.EntidadeDuplicadaException;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.model.Cliente;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.model.Contato;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.repository.ClienteRepository;
 import br.com.alessandro.gerenciamento_de_clientes_nubank.repository.ContatoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ClienteService {
@@ -27,10 +26,9 @@ public class ClienteService {
 
     @Transactional
     public Cliente salvar(DadosCliente dados) {
-        Optional<Cliente> cliente = clienteRepository.findByCpf(dados.cpf());
-        if(cliente.isPresent()){
-            throw  new RuntimeException("Cliente já existe");
-        }
+                clienteRepository.findByCpf(dados.cpf()).ifPresent((cliente) -> {
+                    throw new EntidadeDuplicadaException("Entidade já existe");
+        });
         return clienteRepository.save(new Cliente(dados));
     }
 
@@ -64,7 +62,7 @@ public class ClienteService {
     @Transactional
     public Contato adicionarContato(Long id, DadosContato dadosContato) {
         var cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente com ID " + id + " não encontrado"));
         Contato contato = new Contato(dadosContato, cliente);
         contatoRepository.save(contato);
         return contato;
@@ -72,7 +70,7 @@ public class ClienteService {
 
     public List<DadosDetalamentoContato> listarContatosCliente(Long id) {
         var cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não existe"));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente com ID " + id + " não encontrado"));
         return cliente.getContatos().stream()
                 .map(DadosDetalamentoContato::new)
                 .toList();
